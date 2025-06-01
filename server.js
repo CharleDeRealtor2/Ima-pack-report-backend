@@ -1,13 +1,14 @@
-// server.js
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const app = express();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-// Middleware
+const app = express();
 app.use(cors());
 app.use(express.json());
+
+const JWT_SECRET = 'your_jwt_secret_key'; // Use env var in production
 
 // Connect to MongoDB
 mongoose.connect(
@@ -19,7 +20,17 @@ mongoose.connect(
 ).then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection failed:', err));
 
-// Mongoose Schema
+/* ======= MODELS ======= */
+
+// User schema
+const userSchema = new mongoose.Schema({
+  fullName: { type: String, required: true },
+  email:    { type: String, required: true, unique: true },
+  password: { type: String, required: true }
+});
+const User = mongoose.model('User', userSchema);
+
+// Report schema
 const reportSchema = new mongoose.Schema({
   date: String,
   factory: String,
@@ -66,11 +77,70 @@ const reportSchema = new mongoose.Schema({
   incomingFirstName: String,
   incomingLastName: String
 });
-
 const Report = mongoose.model('Report', reportSchema);
 
-// POST route to receive form data
-app.post('/submit-report', async (req, res) => {
+/* ======= MIDDLEWARE ======= */
+
+// JWT verification middleware
+const verifyToken = (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ msg: 'No token provided' });
+
+    const exportRoutes = require('./routes/export');
+app.use('/export', exportRoutes);
+
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ msg: 'Invalid or expired token' });
+  }
+};
+
+/* ======= ROUTES ======= */
+
+// REGISTER
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { fullName, email, password } = req.body;
+    const existing = await User.findOne({ email });
+    if (existing) return res.status(400).json({ msg: 'User already exists' });
+
+    const hashed = await bcrypt.hash(password, 10);
+    const newUser = new User({ fullName, email, password: hashed });
+    await newUser.save();
+    res.status(201).json({ msg: 'User registered successfully' });
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// LOGIN
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ msg: 'Invalid credentials' });
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) return res.status(400).json({ msg: 'Invalid credentials' });
+
+    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '1d' });
+    res.json({ token, fullName: user.fullName });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// SUBMIT REPORT (protected)
+app.post('/submit-report', verifyToken, async (req, res) => {
   try {
     const report = new Report(req.body);
     await report.save();
@@ -81,7 +151,7 @@ app.post('/submit-report', async (req, res) => {
   }
 });
 
-// Start server
+/* ======= START SERVER ======= */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
