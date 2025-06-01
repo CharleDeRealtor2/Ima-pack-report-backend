@@ -2,9 +2,9 @@
   "name": "ima-pack-report-backend",
   "version": "1.0.0",
   "main": "index.js",
-  "type": "module",
+  "type":  "commonjs",
   "scripts": {
-    "start": "node server.js"
+    "start": "node s.js"
   },
   "dependencies": {
     "axios": "^1.9.0",
