@@ -1,3 +1,5 @@
+require('dotenv').config(); // Load .env variables
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -8,17 +10,17 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const JWT_SECRET = 'your_jwt_secret_key'; // Use env var in production
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Connect to MongoDB
-mongoose.connect(
-  'mongodb+srv://Promasidor:<PROM-HEATFACTORY>@cluster0.lfkkhnu.mongodb.net/imaPackReport?retryWrites=true&w=majority&appName=Cluster0',
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
-).then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection failed:', err));
+mongoose.connect(MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('MongoDB connection failed:', err));
 
 /* ======= MODELS ======= */
 
@@ -81,15 +83,10 @@ const Report = mongoose.model('Report', reportSchema);
 
 /* ======= MIDDLEWARE ======= */
 
-// JWT verification middleware
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ msg: 'No token provided' });
-
-    const exportRoutes = require('./routes/export');
-app.use('/export', exportRoutes);
-
   }
 
   const token = authHeader.split(' ')[1];
@@ -151,8 +148,11 @@ app.post('/submit-report', verifyToken, async (req, res) => {
   }
 });
 
+// Export routes if needed
+// const exportRoutes = require('./routes/export');
+// app.use('/export', exportRoutes);
+
 /* ======= START SERVER ======= */
-const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
