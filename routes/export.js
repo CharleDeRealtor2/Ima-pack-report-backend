@@ -1,10 +1,10 @@
-// routes/export.js
 const express = require('express');
-const router = express.Router();
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
-const Report = require('../models/Report'); // Adjust path if needed
-const authenticateToken = require('../middleware/authenticateToken'); // JWT middleware
+const Report = require('../models/Report');
+const authenticateToken = require('../middleware/authenticateToken');
+
+const router = express.Router();
 
 // PDF Export
 router.get('/pdf', authenticateToken, async (req, res) => {
@@ -24,11 +24,12 @@ router.get('/pdf', authenticateToken, async (req, res) => {
       doc.text(`Shift: ${report.shift}`);
       doc.text(`Product Type: ${report.productType}`);
       doc.text(`OEE: ${report.oee}`);
-      doc.text('---------------------------');
+      doc.moveDown();
     });
 
     doc.end();
   } catch (error) {
+    console.error('❌ PDF export error:', error);
     res.status(500).json({ error: 'Failed to generate PDF' });
   }
 });
@@ -67,6 +68,7 @@ router.get('/excel', authenticateToken, async (req, res) => {
     await workbook.xlsx.write(res);
     res.end();
   } catch (error) {
+    console.error('❌ Excel export error:', error);
     res.status(500).json({ error: 'Failed to generate Excel file' });
   }
 });

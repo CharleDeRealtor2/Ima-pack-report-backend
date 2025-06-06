@@ -1,11 +1,10 @@
-// routes/authRoutes.js
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const router = express.Router();
-const JWT_SECRET = 'your_secret_key'; // Replace with env variable in production
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Register
 router.post('/register', async (req, res) => {
@@ -22,7 +21,7 @@ router.post('/register', async (req, res) => {
 
     res.status(201).json({ msg: 'User registered successfully' });
   } catch (err) {
-    console.error('Registration error:', err);
+    console.error('❌ Registration error:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 });
@@ -42,7 +41,7 @@ router.post('/login', async (req, res) => {
 
     res.json({ token, fullName: user.fullName });
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('❌ Login error:', err);
     res.status(500).json({ msg: 'Server error' });
   }
 });
