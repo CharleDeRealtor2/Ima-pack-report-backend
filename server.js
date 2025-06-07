@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const exportRoutes = require('./routes/export');
-const authenticateToken = require('../middleware/authenticateToken');
+const authenticateToken = require('./middleware/authenticateToken');
 const Report = require('./models/Report');
 
 const app = express();
