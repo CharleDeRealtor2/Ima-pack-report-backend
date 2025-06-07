@@ -1,7 +1,7 @@
 const express = require('express');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
-const Report = require('./models/Report');
+const Report = require('../models/Report');
 const authenticateToken = require('./Middleware/authenticateToken');
 
 const router = express.Router();
