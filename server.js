@@ -5,7 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const exportRoutes = require('./routes/export');
-const authenticateToken = require('./middleware/authenticateToken');
+const authenticateToken = require('../middleware/authenticateToken');
 const Report = require('./models/Report');
 
 const app = express();
@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN,
+  origin: process.env.CLIENT_ORIGIN, // 'https://ima-pack-report-frontend.onrender.com,
   credentials: true
 }));
 app.use(express.json());
