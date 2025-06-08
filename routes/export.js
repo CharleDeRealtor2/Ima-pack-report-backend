@@ -2,12 +2,12 @@ const express = require('express');
 const PDFDocument = require('pdfkit');
 const ExcelJS = require('exceljs');
 const Report = require('../models/Report');
-const authenticateToken = require('./Middleware/authenticateToken');
+const authToken = require('../middleware/authToken');
 
 const router = express.Router();
 
 // PDF Export
-router.get('/pdf', authenticateToken, async (req, res) => {
+router.get('/pdf', authToken, async (req, res) => {
   try {
     const reports = await Report.find().sort({ date: -1 });
 
@@ -35,7 +35,7 @@ router.get('/pdf', authenticateToken, async (req, res) => {
 });
 
 // Excel Export
-router.get('/excel', authenticateToken, async (req, res) => {
+router.get('/excel', authToken, async (req, res) => {
   try {
     const reports = await Report.find().sort({ date: -1 });
 

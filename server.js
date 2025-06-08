@@ -1,19 +1,18 @@
 require('dotenv').config();
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const authRoutes = require('./routes/authRoutes');
 const exportRoutes = require('./routes/export');
-const authenticateToken = require('./Middleware/authenticateToken');
-const Report = require('../models/Report');
+const authToken = require('./middleware/authToken');
+const Report = require('./models/Report');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN, // 'https://ima-pack-report-frontend.onrender.com,
+  origin: process.env.CLIENT_ORIGIN,
   credentials: true
 }));
 app.use(express.json());
@@ -30,8 +29,8 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use('/api/auth', authRoutes);
 app.use('/api/export', exportRoutes);
 
-// Protected route for submitting report
-app.post('/api/submit-report', authenticateToken, async (req, res) => {
+// Protected Report Submission
+app.post('/api/submit-report', authToken, async (req, res) => {
   try {
     const newReport = new Report(req.body);
     await newReport.save();
@@ -42,7 +41,6 @@ app.post('/api/submit-report', authenticateToken, async (req, res) => {
   }
 });
 
-// Default route
 app.get('/', (req, res) => {
   res.send('IMA Pack Report API is running...');
 });
