@@ -1,4 +1,6 @@
+// ✅ Load environment variables
 require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -10,15 +12,21 @@ const Report = require('./models/Report');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// ✅ Default/fallback MongoDB URI
+const mongoURI = process.env.MONGO_URI || 'mongodb+srv://Promasidor:PROM-HEATFACTORY@cluster0.lfkkhnu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+
+// ✅ Log URI (for debug; remove in production)
+console.log('Mongo URI:', mongoURI);
+
 // Middleware
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN,
+  origin: process.env.CLIENT_ORIGIN || 'https://ima-pack-report-frontend.onrender.com',
   credentials: true
 }));
 app.use(express.json());
 
 // MongoDB connection
-mongoose.connect(process.env.MONGO_URI, {
+mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
